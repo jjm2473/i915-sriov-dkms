@@ -9047,6 +9047,7 @@ void intel_modeset_driver_remove_noirq(struct drm_i915_private *i915)
 
 	intel_unregister_dsm_handler();
 
+#define __warn_flushing_systemwide_wq() do {} while(0)
 	/* flush any delayed tasks or pending work */
 	flush_scheduled_work();
 

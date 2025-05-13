@@ -100,13 +100,6 @@ static u64 gen12_pte_encode(dma_addr_t addr,
 	return pte;
 }
 
-static u64 gen12_pte_encode_shim(dma_addr_t addr,
-			  enum i915_cache_level level,
-			  u32 flags)
-{
-	return gen12_pte_encode(addr, (unsigned int)level, flags);
-}
-
 static void gen8_ppgtt_notify_vgt(struct i915_ppgtt *ppgtt, bool create)
 {
 	struct drm_i915_private *i915 = ppgtt->vm.i915;

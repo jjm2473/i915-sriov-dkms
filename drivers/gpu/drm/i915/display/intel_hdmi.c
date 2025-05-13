@@ -2680,11 +2680,15 @@ bool intel_hdmi_handle_sink_scrambling(struct intel_encoder *encoder,
 				       bool scrambling)
 {
 	struct drm_i915_private *dev_priv = to_i915(encoder->base.dev);
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,4,0)
 	struct intel_hdmi *intel_hdmi = enc_to_intel_hdmi(encoder);
+#endif
 	struct drm_scrambling *sink_scrambling =
 		&connector->display_info.hdmi.scdc.scrambling;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,4,0)
 	struct i2c_adapter *adapter =
 		intel_gmbus_get_adapter(dev_priv, intel_hdmi->ddc_bus);
+#endif
 
 	if (!sink_scrambling->supported)
 		return true;

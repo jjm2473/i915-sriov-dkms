@@ -151,6 +151,9 @@ void intel_device_info_print(const struct intel_device_info *info,
 }
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
 #define ID(id) (id)
+#else
+#undef INTEL_VGA_DEVICE
+#define INTEL_VGA_DEVICE(id, info) (id)
 #endif
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
