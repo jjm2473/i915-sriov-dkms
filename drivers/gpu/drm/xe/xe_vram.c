@@ -59,7 +59,7 @@ static void resize_bar(struct xe_device *xe, int resno, resource_size_t size)
 	release_bars(pdev);
 #endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 19, 0)
+#ifdef IDB_PCI_RESIZE_RESOURCE_4ARGS
 	ret = pci_resize_resource(pdev, resno, bar_size, 0);
 #else
 	ret = pci_resize_resource(pdev, resno, bar_size);
