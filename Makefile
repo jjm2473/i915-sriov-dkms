@@ -1,10 +1,8 @@
 DKMS_MODULE_VERSION := "2026.03.05.2-sriov"
-DKMS_MODULE_ORIGIN_KERNEL := "6.19.6"
+DKMS_MODULE_ORIGIN_KERNEL := "6.19"
 
 LINUXINCLUDE := \
 	-I$(src)/include \
-	-I$(src)/include/uapi \
-	-I$(src)/include/trace \
 	$(LINUXINCLUDE) \
 	-include $(src)/include/config.h
 

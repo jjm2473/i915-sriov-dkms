@@ -810,10 +810,10 @@ static int __i915_ttm_get_pages(struct drm_i915_gem_object *obj,
 	}
 
 	if (bo->ttm && !ttm_tt_is_populated(bo->ttm)) {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 13, 0)
-		ret = ttm_tt_populate(bo->bdev, bo->ttm, &ctx);
-#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 13, 0)
 		ret = ttm_bo_populate(bo, &ctx);
+#else
+		ret = ttm_tt_populate(bo->bdev, bo->ttm, &ctx);
 #endif
 		if (ret)
 			return ret;
@@ -1035,10 +1035,10 @@ static void i915_ttm_delayed_free(struct drm_i915_gem_object *obj)
 {
 	GEM_BUG_ON(!obj->ttm.created);
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 19, 0)
-	ttm_bo_put(i915_gem_to_ttm(obj));
-#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 19, 0)
 	ttm_bo_fini(i915_gem_to_ttm(obj));
+#else
+	ttm_bo_put(i915_gem_to_ttm(obj));
 #endif
 }
 

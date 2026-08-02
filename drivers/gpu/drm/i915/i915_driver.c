@@ -1035,12 +1035,12 @@ void i915_driver_shutdown(struct drm_i915_private *i915)
 	intel_runtime_pm_disable(&i915->runtime_pm);
 	intel_power_domains_disable(display);
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 15, 0)
-	intel_fbdev_set_suspend(&i915->drm, FBINFO_STATE_SUSPENDED, true);
-#elif LINUX_VERSION_CODE < KERNEL_VERSION(6, 19, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 19, 0)
+	drm_client_dev_suspend(&i915->drm);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
 	drm_client_dev_suspend(&i915->drm, false);
 #else
-	drm_client_dev_suspend(&i915->drm);
+	intel_fbdev_set_suspend(&i915->drm, FBINFO_STATE_SUSPENDED, true);
 #endif
 
 	if (intel_display_device_present(display)) {
@@ -1127,12 +1127,12 @@ static int i915_drm_suspend(struct drm_device *dev)
 	 * properly. */
 	intel_power_domains_disable(display);
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 15, 0)
-	intel_fbdev_set_suspend(dev, FBINFO_STATE_SUSPENDED, true);
-#elif LINUX_VERSION_CODE < KERNEL_VERSION(6, 19, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 19, 0)
+	drm_client_dev_suspend(dev);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
 	drm_client_dev_suspend(dev, false);
 #else
-	drm_client_dev_suspend(dev);
+	intel_fbdev_set_suspend(dev, FBINFO_STATE_SUSPENDED, true);
 #endif
 
 	if (intel_display_device_present(display)) {
@@ -1349,12 +1349,12 @@ static int i915_drm_resume(struct drm_device *dev)
 
 	intel_opregion_resume(display);
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 15, 0)
-	intel_fbdev_set_suspend(dev, FBINFO_STATE_RUNNING, false);
-#elif LINUX_VERSION_CODE < KERNEL_VERSION(6, 19, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 19, 0)
+	drm_client_dev_resume(dev);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
 	drm_client_dev_resume(dev, false);
 #else
-	drm_client_dev_resume(dev);
+	intel_fbdev_set_suspend(dev, FBINFO_STATE_RUNNING, false);
 #endif
 
 	intel_power_domains_enable(display);

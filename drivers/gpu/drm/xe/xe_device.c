@@ -436,14 +436,14 @@ struct xe_device *xe_device_create(struct pci_dev *pdev,
 	if (IS_ERR(xe))
 		return xe;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 19, 0)
-	err = ttm_device_init(&xe->ttm, &xe_ttm_funcs, xe->drm.dev,
-			      xe->drm.anon_inode->i_mapping,
-			      xe->drm.vma_offset_manager, false, 0);
-#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 19, 0)
 	err = ttm_device_init(&xe->ttm, &xe_ttm_funcs, xe->drm.dev,
 			      xe->drm.anon_inode->i_mapping,
 			      xe->drm.vma_offset_manager, 0);
+#else
+	err = ttm_device_init(&xe->ttm, &xe_ttm_funcs, xe->drm.dev,
+			      xe->drm.anon_inode->i_mapping,
+			      xe->drm.vma_offset_manager, false, 0);
 #endif
 	if (WARN_ON(err))
 		goto err;
@@ -1300,10 +1300,10 @@ void xe_device_declare_wedged(struct xe_device *xe)
 
 		/* Notify userspace of wedged device */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 17, 0)
-		drm_dev_wedged_event(&xe->drm, xe->wedged.method);
-#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 17, 0)
 		drm_dev_wedged_event(&xe->drm, xe->wedged.method, NULL);
+#else
+		drm_dev_wedged_event(&xe->drm, xe->wedged.method);
 #endif
 #endif
 	}

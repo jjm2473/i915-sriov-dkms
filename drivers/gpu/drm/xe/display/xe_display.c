@@ -332,12 +332,12 @@ void xe_display_pm_suspend(struct xe_device *xe)
 	 */
 	intel_power_domains_disable(display);
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 13, 0)
-	intel_fbdev_set_suspend(&xe->drm, FBINFO_STATE_SUSPENDED, true);
-#elif LINUX_VERSION_CODE < KERNEL_VERSION(6, 19, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 19, 0)
+	drm_client_dev_suspend(&xe->drm);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(6, 13, 0)
 	drm_client_dev_suspend(&xe->drm, false);
 #else
-	drm_client_dev_suspend(&xe->drm);
+	intel_fbdev_set_suspend(&xe->drm, FBINFO_STATE_SUSPENDED, true);
 #endif
 
 
@@ -372,12 +372,12 @@ void xe_display_pm_shutdown(struct xe_device *xe)
 
 	intel_power_domains_disable(display);
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 13, 0)
-	intel_fbdev_set_suspend(&xe->drm, FBINFO_STATE_SUSPENDED, true);
-#elif LINUX_VERSION_CODE < KERNEL_VERSION(6, 19, 0)
-	drm_client_dev_suspend(&xe->drm, false);
-#else 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 19, 0)
 	drm_client_dev_suspend(&xe->drm);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(6, 13, 0)
+	drm_client_dev_suspend(&xe->drm, false);
+#else
+	intel_fbdev_set_suspend(&xe->drm, FBINFO_STATE_SUSPENDED, true);
 #endif
 
 	if (intel_display_device_present(display)) {
@@ -503,12 +503,12 @@ void xe_display_pm_resume(struct xe_device *xe)
 
 	intel_opregion_resume(display);
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 13, 0)
-	intel_fbdev_set_suspend(&xe->drm, FBINFO_STATE_RUNNING, false);
-#elif LINUX_VERSION_CODE < KERNEL_VERSION(6, 19, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 19, 0)
+	drm_client_dev_resume(&xe->drm);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(6, 13, 0)
 	drm_client_dev_resume(&xe->drm, false);
 #else
-	drm_client_dev_resume(&xe->drm);
+	intel_fbdev_set_suspend(&xe->drm, FBINFO_STATE_RUNNING, false);
 #endif
 
 	intel_power_domains_enable(display);

@@ -575,15 +575,15 @@ static int xe_ttm_tt_populate(struct ttm_device *ttm_dev, struct ttm_tt *tt,
 	    !(tt->page_flags & TTM_TT_FLAG_EXTERNAL_MAPPABLE))
 		return 0;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 15, 0)
-	err = ttm_pool_alloc(&ttm_dev->pool, tt, ctx);
-#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
 	if (ttm_tt_is_backed_up(tt) && !xe_tt->purgeable) {
 		err = ttm_tt_restore(ttm_dev, tt, ctx);
 	} else {
 		ttm_tt_clear_backed_up(tt);
 		err = ttm_pool_alloc(&ttm_dev->pool, tt, ctx);
 	}
+#else
+	err = ttm_pool_alloc(&ttm_dev->pool, tt, ctx);
 #endif
 	if (err)
 		return err;
@@ -1774,10 +1774,10 @@ static void xe_gem_object_free(struct drm_gem_object *obj)
 	 * refcount directly if needed.
 	 */
 	__xe_bo_vunmap(gem_to_xe_bo(obj));
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 19, 0)
-	ttm_bo_put(container_of(obj, struct ttm_buffer_object, base));
-#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 19, 0)
 	ttm_bo_fini(container_of(obj, struct ttm_buffer_object, base));
+#else
+	ttm_bo_put(container_of(obj, struct ttm_buffer_object, base));
 #endif
 }
 
@@ -1835,10 +1835,10 @@ static int xe_bo_fault_migrate(struct xe_bo *bo, struct ttm_operation_ctx *ctx,
 	if (ttm_manager_type(tbo->bdev, tbo->resource->mem_type)->use_tt) {
 		err = xe_bo_wait_usage_kernel(bo, ctx);
 		if (!err)
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 13, 0)
-			err = ttm_tt_populate(bo->ttm.bdev, bo->ttm.ttm, ctx);
-#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 13, 0)
 			err = ttm_bo_populate(&bo->ttm, ctx);
+#else
+			err = ttm_tt_populate(bo->ttm.bdev, bo->ttm.ttm, ctx);
 #endif
 	} else if (should_migrate_to_smem(bo)) {
 		xe_assert(xe_bo_device(bo), bo->flags & XE_BO_FLAG_SYSTEM);
@@ -3669,14 +3669,14 @@ int xe_bo_dumb_create(struct drm_file *file_priv,
 	u32 page_size = max_t(u32, PAGE_SIZE,
 		xe->info.vram_flags & XE_VRAM_FLAGS_NEED64K ? SZ_64K : SZ_4K);
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 19, 0)
-	args->pitch = ALIGN(args->width * cpp, 64);
-	args->size = ALIGN(mul_u32_u32(args->pitch, args->height),
-			   page_size);
-#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 19, 0)
 	err = drm_mode_size_dumb(dev, args, SZ_64, page_size);
 	if (err)
 		return err;
+#else
+	args->pitch = ALIGN(args->width * cpp, 64);
+	args->size = ALIGN(mul_u32_u32(args->pitch, args->height),
+			   page_size);
 #endif
 
 	bo = xe_bo_create_user(xe, NULL, args->size,

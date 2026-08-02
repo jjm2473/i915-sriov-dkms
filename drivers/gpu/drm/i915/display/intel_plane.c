@@ -320,16 +320,16 @@ static void intel_plane_clear_hw_state(struct intel_plane_state *plane_state)
 	memset(&plane_state->hw, 0, sizeof(plane_state->hw));
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 15, 0)
-static void
-intel_plane_copy_uapi_plane_damage(struct intel_plane_state *new_plane_state,
-				   const struct intel_plane_state *old_uapi_plane_state,
-				   struct intel_plane_state *new_uapi_plane_state)
-#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
 static void
 intel_plane_copy_uapi_plane_damage(struct intel_plane_state *new_plane_state,
 				   const struct intel_plane_state *old_uapi_plane_state,
 				   const struct intel_plane_state *new_uapi_plane_state)
+#else
+static void
+intel_plane_copy_uapi_plane_damage(struct intel_plane_state *new_plane_state,
+				   const struct intel_plane_state *old_uapi_plane_state,
+				   struct intel_plane_state *new_uapi_plane_state)
 #endif
 {
 	struct intel_display *display = to_intel_display(new_plane_state);
@@ -772,10 +772,10 @@ static int plane_atomic_check(struct intel_atomic_state *state,
 		intel_atomic_get_new_plane_state(state, plane);
 	const struct intel_plane_state *old_plane_state =
 		intel_atomic_get_old_plane_state(state, plane);
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 15, 0)
-	struct intel_plane_state *new_primary_crtc_plane_state;
-#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
 	const struct intel_plane_state *new_primary_crtc_plane_state;
+#else
+	struct intel_plane_state *new_primary_crtc_plane_state;
 #endif
 	const struct intel_plane_state *old_primary_crtc_plane_state;
 	struct intel_crtc *crtc = intel_crtc_for_pipe(display, plane->pipe);
@@ -1471,18 +1471,18 @@ static const struct drm_plane_helper_funcs intel_primary_plane_helper_funcs = {
 };
 #endif
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 17, 0)
-void intel_plane_helper_add(struct intel_plane *plane)
-{
-	drm_plane_helper_add(&plane->base, &intel_plane_helper_funcs);
-}
-#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 17, 0)
 void intel_plane_helper_add(struct intel_plane *plane)
 {
 	if (plane->base.type == DRM_PLANE_TYPE_PRIMARY)
 		drm_plane_helper_add(&plane->base, &intel_primary_plane_helper_funcs);
 	else
 		drm_plane_helper_add(&plane->base, &intel_plane_helper_funcs);
+}
+#else
+void intel_plane_helper_add(struct intel_plane *plane)
+{
+	drm_plane_helper_add(&plane->base, &intel_plane_helper_funcs);
 }
 #endif
 

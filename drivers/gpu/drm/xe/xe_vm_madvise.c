@@ -6,7 +6,7 @@
 #include "xe_vm_madvise.h"
 
 #include <linux/nospec.h>
-#include <drm/xe_drm.h>
+#include <uapi/drm/xe_drm.h>
 
 #include "xe_bo.h"
 #include "xe_pat.h"

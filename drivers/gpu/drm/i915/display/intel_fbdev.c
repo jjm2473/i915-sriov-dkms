@@ -269,15 +269,15 @@ __intel_fbdev_fb_alloc(struct intel_display *display,
 		goto err;
 	}
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 17, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 17, 0)
 	fb = intel_framebuffer_create(obj,
-				      backport__drm_get_format_info6p16(display->drm,
+				      drm_get_format_info(display->drm,
 							  mode_cmd.pixel_format,
 							  mode_cmd.modifier[0]),
 				      &mode_cmd);
 #else
 	fb = intel_framebuffer_create(obj,
-				      drm_get_format_info(display->drm,
+				      backport__drm_get_format_info6p16(display->drm,
 							  mode_cmd.pixel_format,
 							  mode_cmd.modifier[0]),
 				      &mode_cmd);
@@ -302,10 +302,10 @@ int intel_fbdev_driver_fbdev_probe(struct drm_fb_helper *helper,
 	struct intel_display *display = to_intel_display(helper->dev);
 	struct intel_fbdev *ifbdev = to_intel_fbdev(helper);
 	struct intel_framebuffer *fb = ifbdev->fb;
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 19, 0)
-	struct fb_info *info;
-#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 19, 0)
 	struct fb_info *info = helper->info;
+#else
+	struct fb_info *info;
 #endif
 	struct ref_tracker *wakeref;
 	struct i915_vma *vma;
@@ -793,7 +793,28 @@ static unsigned int intel_fbdev_color_mode(const struct drm_format_info *info)
 }
 #endif
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 15, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+void intel_fbdev_setup(struct intel_display *display)
+{
+	struct intel_fbdev *ifbdev;
+	unsigned int preferred_bpp = 0;
+
+	if (!HAS_DISPLAY(display))
+		return;
+
+	ifbdev = drmm_kzalloc(display->drm, sizeof(*ifbdev), GFP_KERNEL);
+	if (!ifbdev)
+		return;
+
+	display->fbdev.fbdev = ifbdev;
+	if (intel_fbdev_init_bios(display, ifbdev))
+		preferred_bpp = intel_fbdev_color_mode(ifbdev->fb->base.format);
+	if (!preferred_bpp)
+		preferred_bpp = 32;
+
+	drm_client_setup_with_color_mode(display->drm, preferred_bpp);
+}
+#else
 void intel_fbdev_setup(struct intel_display *display)
 {
 	struct drm_device *dev = display->drm;
@@ -831,27 +852,6 @@ err_drm_fb_helper_unprepare:
 	drm_fb_helper_unprepare(&ifbdev->helper);
 	mutex_destroy(&ifbdev->hpd_lock);
 	kfree(ifbdev);
-}
-#else
-void intel_fbdev_setup(struct intel_display *display)
-{
-	struct intel_fbdev *ifbdev;
-	unsigned int preferred_bpp = 0;
-
-	if (!HAS_DISPLAY(display))
-		return;
-
-	ifbdev = drmm_kzalloc(display->drm, sizeof(*ifbdev), GFP_KERNEL);
-	if (!ifbdev)
-		return;
-
-	display->fbdev.fbdev = ifbdev;
-	if (intel_fbdev_init_bios(display, ifbdev))
-		preferred_bpp = intel_fbdev_color_mode(ifbdev->fb->base.format);
-	if (!preferred_bpp)
-		preferred_bpp = 32;
-
-	drm_client_setup_with_color_mode(display->drm, preferred_bpp);
 }
 #endif
 

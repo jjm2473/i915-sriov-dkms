@@ -76,20 +76,7 @@ static s64 __xe_shrinker_walk(struct xe_device *xe,
 		if (!man || !man->use_tt)
 			continue;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 17, 0)
-		ttm_bo_lru_for_each_reserved_guarded(&curs, man, ctx, ttm_bo) {
-			if (!ttm_bo_shrink_suitable(ttm_bo, ctx))
-				continue;
-
-			lret = xe_bo_shrink(ctx, ttm_bo, flags, scanned);
-			if (lret < 0)
-				return lret;
-
-			freed += lret;
-			if (*scanned >= to_scan)
-				break;
-		}
-#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 17, 0)
 		ttm_bo_lru_for_each_reserved_guarded(&curs, man, &arg, ttm_bo) {
 			if (!ttm_bo_shrink_suitable(ttm_bo, ctx))
 				continue;
@@ -104,6 +91,19 @@ static s64 __xe_shrinker_walk(struct xe_device *xe,
 		}
 		/* Trylocks should never error, just fail. */
 		xe_assert(xe, !IS_ERR(ttm_bo));
+#else
+		ttm_bo_lru_for_each_reserved_guarded(&curs, man, ctx, ttm_bo) {
+			if (!ttm_bo_shrink_suitable(ttm_bo, ctx))
+				continue;
+
+			lret = xe_bo_shrink(ctx, ttm_bo, flags, scanned);
+			if (lret < 0)
+				return lret;
+
+			freed += lret;
+			if (*scanned >= to_scan)
+				break;
+		}
 #endif
 	}
 

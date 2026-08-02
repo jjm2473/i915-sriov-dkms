@@ -1206,10 +1206,10 @@ i9xx_get_initial_plane_config(struct intel_crtc *crtc,
 	pixel_format = val & DISP_FORMAT_MASK;
 	fourcc = i9xx_format_to_fourcc(pixel_format);
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 17, 0)
-	fb->format = backport__drm_get_format_info6p16(display->drm, fourcc, fb->modifier);
-#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 17, 0)
 	fb->format = drm_get_format_info(display->drm, fourcc, fb->modifier);
+#else
+	fb->format = backport__drm_get_format_info6p16(display->drm, fourcc, fb->modifier);
 #endif
 
 	if (display->platform.haswell || display->platform.broadwell) {

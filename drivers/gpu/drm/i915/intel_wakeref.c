@@ -138,10 +138,10 @@ int intel_wakeref_wait_for_idle(struct intel_wakeref *wf)
 
 static void wakeref_auto_timeout(struct timer_list *t)
 {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 16, 0)
-	struct intel_wakeref_auto *wf = from_timer(wf, t, timer);
-#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 16, 0)
 	struct intel_wakeref_auto *wf = timer_container_of(wf, t, timer);
+#else
+	struct intel_wakeref_auto *wf = from_timer(wf, t, timer);
 #endif
 	intel_wakeref_t wakeref;
 	unsigned long flags;

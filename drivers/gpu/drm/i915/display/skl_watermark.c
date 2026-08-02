@@ -647,10 +647,10 @@ skl_cursor_allocation(const struct intel_crtc_state *crtc_state,
 	format = DRM_FORMAT_ARGB8888;
 	modifier = DRM_FORMAT_MOD_LINEAR;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 17, 0)
-	info  = backport__drm_get_format_info6p16(display->drm, format, modifier);
-#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 17, 0)
 	info  = drm_get_format_info(display->drm, format, modifier);
+#else
+	info  = backport__drm_get_format_info6p16(display->drm, format, modifier);
 #endif
 
 	ret = skl_compute_wm_params(crtc_state, mode_config->cursor_width,
@@ -2184,10 +2184,10 @@ unsigned int skl_wm0_prefill_lines_worst(const struct intel_crtc_state *crtc_sta
 	else
 		modifier = I915_FORMAT_MOD_Y_TILED;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 17, 0)
-	info = backport__drm_get_format_info6p16(display->drm, format, modifier);
-#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 17, 0)
 	info = drm_get_format_info(display->drm, format, modifier);
+#else
+	info = backport__drm_get_format_info6p16(display->drm, format, modifier);
 #endif
 
 	pixel_rate = DIV_ROUND_UP_ULL(mul_u32_u32(skl_scaler_max_total_scale(crtc_state),

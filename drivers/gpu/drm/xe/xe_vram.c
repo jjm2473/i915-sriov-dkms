@@ -59,10 +59,10 @@ static void resize_bar(struct xe_device *xe, int resno, resource_size_t size)
 	release_bars(pdev);
 #endif
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 19, 0)
-	ret = pci_resize_resource(pdev, resno, bar_size);
-#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 19, 0)
 	ret = pci_resize_resource(pdev, resno, bar_size, 0);
+#else
+	ret = pci_resize_resource(pdev, resno, bar_size);
 #endif
 	if (ret) {
 		drm_info(&xe->drm, "Failed to resize BAR%d to %dM (%pe). Consider enabling 'Resizable BAR' support in your BIOS\n",
@@ -100,15 +100,15 @@ void xe_vram_resize_bar(struct xe_device *xe)
 						     (resource_size_t)SZ_1M);
 
 		if (!pci_rebar_size_supported(pdev, LMEM_BAR, rebar_size)) {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 19, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 19, 0)
 			drm_info(&xe->drm,
-				 "Requested size: %lluMiB is not supported by rebar sizes: 0x%x. Leaving default: %lluMiB\n",
+				 "Requested size: %lluMiB is not supported by rebar sizes: 0x%llx. Leaving default: %lluMiB\n",
 				 (u64)pci_rebar_size_to_bytes(rebar_size) >> 20,
 				 pci_rebar_get_possible_sizes(pdev, LMEM_BAR),
 				 (u64)current_size >> 20);
 #else
 			drm_info(&xe->drm,
-				 "Requested size: %lluMiB is not supported by rebar sizes: 0x%llx. Leaving default: %lluMiB\n",
+				 "Requested size: %lluMiB is not supported by rebar sizes: 0x%x. Leaving default: %lluMiB\n",
 				 (u64)pci_rebar_size_to_bytes(rebar_size) >> 20,
 				 pci_rebar_get_possible_sizes(pdev, LMEM_BAR),
 				 (u64)current_size >> 20);

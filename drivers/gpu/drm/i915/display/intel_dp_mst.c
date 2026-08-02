@@ -287,12 +287,12 @@ int intel_dp_mtp_tu_compute_config(struct intel_dp *intel_dp,
 		if (IS_ERR(mst_state))
 			return PTR_ERR(mst_state);
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 14, 0)
-		mst_state->pbn_div = drm_dp_get_vc_payload_bw(&intel_dp->mst.mgr,
-							      crtc_state->port_clock,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
+		mst_state->pbn_div = drm_dp_get_vc_payload_bw(crtc_state->port_clock,
 							      crtc_state->lane_count);
 #else
-		mst_state->pbn_div = drm_dp_get_vc_payload_bw(crtc_state->port_clock,
+		mst_state->pbn_div = drm_dp_get_vc_payload_bw(&intel_dp->mst.mgr,
+							      crtc_state->port_clock,
 							      crtc_state->lane_count);
 #endif
 
@@ -1460,16 +1460,16 @@ static int mst_connector_get_modes(struct drm_connector *_connector)
 	return mst_connector_get_ddc_modes(&connector->base);
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 15, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
 static int
 mst_connector_mode_valid_ctx(struct drm_connector *_connector,
-			     struct drm_display_mode *mode,
+			     const struct drm_display_mode *mode,
 			     struct drm_modeset_acquire_ctx *ctx,
 			     enum drm_mode_status *status)
 #else
 static int
 mst_connector_mode_valid_ctx(struct drm_connector *_connector,
-			     const struct drm_display_mode *mode,
+			     struct drm_display_mode *mode,
 			     struct drm_modeset_acquire_ctx *ctx,
 			     enum drm_mode_status *status)
 #endif
@@ -1775,12 +1775,12 @@ mst_topology_add_connector(struct drm_dp_mst_topology_mgr *mgr,
 		detect_dsc_hblank_expansion_quirk(connector);
 #endif
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 14, 0)
-	ret = drm_connector_init(display->drm, &connector->base, &mst_connector_funcs,
-					 DRM_MODE_CONNECTOR_DisplayPort);
-#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
 	ret = drm_connector_dynamic_init(display->drm, &connector->base, &mst_connector_funcs,
 					 DRM_MODE_CONNECTOR_DisplayPort, NULL);
+#else
+	ret = drm_connector_init(display->drm, &connector->base, &mst_connector_funcs,
+					 DRM_MODE_CONNECTOR_DisplayPort);
 #endif
 	if (ret)
 		goto err_put_port;
