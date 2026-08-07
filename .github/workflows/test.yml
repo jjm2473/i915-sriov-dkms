@@ -24,7 +24,7 @@ jobs:
           apt-get update
           apt-get install -y proxmox-archive-keyring
           apt-get upgrade -y
-          apt-get install -y build-essential elfutils libelf-dev proxmox-default-kernel proxmox-default-headers
+          apt-get install -y build-essential elfutils libelf-dev proxmox-default-headers
       - name: Checkout
         uses: actions/checkout@v6
         with:
@@ -56,6 +56,48 @@ jobs:
           KERNELRELEASE=$(echo -n "$KERNEL_SOURCE_DIR" | sed 's/.*\/lib\/modules\///g;s/\/build//')
           make -j$(nproc) KERNELRELEASE=$KERNELRELEASE -C $KERNEL_SOURCE_DIR M=$(pwd)
 
+  test-debian-trixie:
+    runs-on: ubuntu-24.04
+    container:
+      image: debian:trixie
+    steps:
+    - name: Install Dependencies
+      run: |
+        export DEBIAN_FRONTEND=noninteractive
+        apt-get update
+        apt-get install -y build-essential elfutils libelf-dev linux-headers-amd64
+        apt-get upgrade -y
+    - name: Checkout
+      uses: actions/checkout@v6
+      with:
+        path: i915-sriov-dkms
+    - name: Check Kernel Compatibility
+      if: github.event_name != 'workflow_dispatch'
+      id: check_kernel
+      shell: bash
+      working-directory: i915-sriov-dkms
+      run: |
+        KERNEL_SOURCE_DIR=$(dpkg -L $(dpkg -s linux-headers-amd64 | grep "Depends: " | cut -d " " -f2) | grep -m 1 -Eo ".*/lib/modules/[^/]+/build")
+        KERNELRELEASE=$(echo -n "$KERNEL_SOURCE_DIR" | sed 's/.*\/lib\/modules\///g;s/\/build//')
+        echo "Detected kernel: $KERNELRELEASE"
+
+        REGEX=$(grep '^BUILD_EXCLUSIVE_KERNEL=' dkms.conf | cut -d'"' -f2)
+
+        if [[ ! "$KERNELRELEASE" =~ $REGEX ]]; then
+          echo "Kernel $KERNELRELEASE not supported yet."
+          echo "skip_build=true" >> $GITHUB_OUTPUT
+        else
+          echo "Kernel $KERNELRELEASE is supported."
+          echo "skip_build=false" >> $GITHUB_OUTPUT
+        fi
+    - name: Build Module
+      if: github.event_name == 'workflow_dispatch' || steps.check_kernel.outputs.skip_build == 'false'
+      working-directory: i915-sriov-dkms
+      run: |
+        KERNEL_SOURCE_DIR=$(dpkg -L $(dpkg -s linux-headers-amd64 | grep "Depends: " | cut -d " " -f2) | grep -m 1 -Eo ".*/lib/modules/[^/]+/build")
+        KERNELRELEASE=$(echo -n "$KERNEL_SOURCE_DIR" | sed 's/.*\/lib\/modules\///g;s/\/build//')
+        make -j$(nproc) KERNELRELEASE=$KERNELRELEASE -C $KERNEL_SOURCE_DIR M=$(pwd)
+
   test-ubuntu-questing:
     runs-on: ubuntu-24.04
     container:
@@ -64,7 +106,7 @@ jobs:
     - name: Install Dependencies
       run: |
         apt-get update
-        DEBIAN_FRONTEND=noninteractive apt-get install -y git build-essential linux-generic linux-headers-generic
+        DEBIAN_FRONTEND=noninteractive apt-get install -y git build-essential linux-headers-generic
     - name: Checkout
       uses: actions/checkout@v6
       with:
@@ -84,7 +126,7 @@ jobs:
       - name: Install Dependencies
         run: |
           pacman-key --init
-          pacman -Syu --noconfirm git linux linux-headers
+          pacman -Syu --noconfirm git linux-headers
       - name: Checkout
         uses: actions/checkout@v6
         with:
@@ -123,7 +165,7 @@ jobs:
       - name: Install Dependencies
         run: |
           pacman-key --init
-          pacman -Syu --noconfirm git linux-lts linux-lts-headers
+          pacman -Syu --noconfirm git linux-lts-headers
       - name: Checkout
         uses: actions/checkout@v6
         with:
@@ -167,7 +209,7 @@ jobs:
           Server = https://repo.archlinuxcn.org/\$arch
           SigLevel = Never
           EOF
-          pacman -Syu --noconfirm git linux-mainline linux-mainline-headers
+          pacman -Syu --noconfirm git linux-mainline-headers
       - name: Checkout
         uses: actions/checkout@v6
         with:
