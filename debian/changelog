@@ -1,7 +1,5 @@
 i915-sriov-dkms (###LATEST_VERSION###) UNRELEASED; urgency=medium
 
-  * Apply patches from v6.19.14
-  * Apply patches from v6.18.41
-  * Add conftest macro
+  * Apply patches from v6.18.42
 
- -- bbaa <bbaa@bbaa.moe>  Sun, 02 Aug 2026 16:53:09 +0800
+ -- bbaa <bbaa@bbaa.moe>  Sat, 08 Aug 2026 19:19:33 +0800
