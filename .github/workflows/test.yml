@@ -126,6 +126,7 @@ jobs:
       - name: Install Dependencies
         run: |
           pacman-key --init
+          sed -i '/^#\[\(core\|extra\)-testing\]/,/^$/s/^#//' /etc/pacman.conf
           pacman -Syu --noconfirm git linux-headers
       - name: Checkout
         uses: actions/checkout@v7
@@ -165,6 +166,7 @@ jobs:
       - name: Install Dependencies
         run: |
           pacman-key --init
+          sed -i '/^#\[\(core\|extra\)-testing\]/,/^$/s/^#//' /etc/pacman.conf
           pacman -Syu --noconfirm git linux-lts-headers
       - name: Checkout
         uses: actions/checkout@v7
@@ -204,6 +206,7 @@ jobs:
       - name: Install Dependencies
         run: |
           pacman-key --init
+          sed -i '/^#\[\(core\|extra\)-testing\]/,/^$/s/^#//' /etc/pacman.conf
           cat <<EOF >> /etc/pacman.conf
           [archlinuxcn]
           Server = https://repo.archlinuxcn.org/\$arch
