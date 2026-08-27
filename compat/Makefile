@@ -24,8 +24,9 @@ intel_sriov_compat-y += v6.18/drm_gpuvm.o \
 intel_sriov_compat-y += v6.19/drm_dp_helper.o \
 			v6.19/pci_rebar.o
 
-intel_sriov_compat-y += drm_gpusvm.o \
-			drm_pagemap.o
+intel_sriov_compat-y += drm_gpusvm.o
+
+intel_sriov_compat-$(CONFIG_ZONE_DEVICE) += drm_pagemap.o
 
 intel_sriov_compat-y += main.o
 

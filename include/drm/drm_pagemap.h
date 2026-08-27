@@ -6,12 +6,14 @@
 #include <linux/hmm.h>
 #include <linux/types.h>
 
+#define drm_pagemap_page_to_dpagemap LINUX_BACKPORT(drm_pagemap_page_to_dpagemap)
+#if IS_ENABLED(CONFIG_ZONE_DEVICE)
 #define drm_pagemap_migrate_to_devmem LINUX_BACKPORT(drm_pagemap_migrate_to_devmem)
 #define drm_pagemap_evict_to_ram LINUX_BACKPORT(drm_pagemap_evict_to_ram)
 #define drm_pagemap_pagemap_ops_get LINUX_BACKPORT(drm_pagemap_pagemap_ops_get)
 #define drm_pagemap_devmem_init LINUX_BACKPORT(drm_pagemap_devmem_init)
-#define drm_pagemap_page_to_dpagemap LINUX_BACKPORT(drm_pagemap_page_to_dpagemap)
 #define drm_pagemap_populate_mm LINUX_BACKPORT(drm_pagemap_populate_mm)
+#endif
 
 #define NR_PAGES(order) (1U << (order))
 

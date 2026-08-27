@@ -144,7 +144,7 @@ xe-y += xe_bb.o \
 
 xe-$(CONFIG_I2C)	+= xe_i2c.o
 
-xe-y += xe_svm.o
+xe-$(CONFIG_ZONE_DEVICE) += xe_svm.o
 xe-y += xe_userptr.o
 
 # graphics hardware monitoring (HWMON) support
