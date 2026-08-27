@@ -4,7 +4,13 @@
 #define LINUX_BACKPORT(__sym) intel_drm_shim_##__sym
 #endif
 
-#define MODULE_ABS_PATH(path) DKMS_MODULE_SOURCE_DIR/path
+/*
+ * define_trace.h stringifies TRACE_INCLUDE_PATH/system.h after macro expansion.
+ * If an absolute build path contains token 'linux' (e.g. linux-x86_64) and the
+ * toolchain predefines linux=1, the token can be rewritten during expansion.
+ * Keep a token-safe relative path from include/trace/define_trace.h instead.
+ */
+#define MODULE_ABS_PATH(path) .
 
 // We vendor our own copy of the DRM_GPUSVM module, so enable it here.
 
