@@ -425,7 +425,15 @@ i915-y += \
 i915-y += \
 	i915_vgpu.o
 
-i915-y += \
+ifdef CONFIG_KVM_EXTERNAL_WRITE_TRACKING
+OOT_CONFIG_DRM_I915_GVT:=y
+OOT_CONFIG_DRM_I915_GVT_KVMGT:=m
+else
+OOT_CONFIG_DRM_I915_GVT:=n
+OOT_CONFIG_DRM_I915_GVT_KVMGT:=n
+endif
+
+i915-$(OOT_CONFIG_DRM_I915_GVT) += \
 	intel_gvt.o \
 	intel_gvt_mmio_table.o
 include $(src)/gvt/Makefile
@@ -436,4 +444,4 @@ ifdef CONFIG_DRM_I915_WERROR
 endif
 
 obj-m += i915.o
-obj-m += kvmgt.o
+obj-$(OOT_CONFIG_DRM_I915_GVT_KVMGT) += kvmgt.o
