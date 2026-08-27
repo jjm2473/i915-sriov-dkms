@@ -360,8 +360,12 @@ ifeq ($(CONFIG_DEBUG_FS),y)
 		i915-display/intel_pipe_crc.o
 endif
 
+ifdef CONFIG_USB4
+ifdef CONFIG_DRM_DISPLAY_DP_TUNNEL
 xe-y += \
 	i915-display/intel_dp_tunnel.o
+endif
+endif
 
 obj-m += xe.o
 

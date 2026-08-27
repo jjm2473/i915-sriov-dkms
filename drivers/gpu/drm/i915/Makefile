@@ -397,8 +397,12 @@ i915-y += \
 	display/vlv_dsi.o \
 	display/vlv_dsi_pll.o
 
+ifdef CONFIG_USB4
+ifdef CONFIG_DRM_DISPLAY_DP_TUNNEL
 i915-y += \
 	display/intel_dp_tunnel.o
+endif
+endif
 
 i915-y += \
 	i915_perf.o
@@ -409,7 +413,7 @@ i915-y += \
 	pxp/intel_pxp_huc.o \
 	pxp/intel_pxp_tee.o
 
-i915-y += \
+i915-$(CONFIG_INTEL_MEI_PXP) += \
 	pxp/intel_pxp_cmd.o \
 	pxp/intel_pxp_debugfs.o \
 	pxp/intel_pxp_gsccs.o \
